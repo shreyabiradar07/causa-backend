@@ -39,10 +39,12 @@ public class McpContextCollector {
     private final McpConfig mcpConfig;
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
+    private final LibertyLogsContextCollector libertyLogsContextCollector;
 
     @Inject
-    public McpContextCollector(McpConfig mcpConfig) {
+    public McpContextCollector(McpConfig mcpConfig, LibertyLogsContextCollector libertyLogsContextCollector) {
         this.mcpConfig = mcpConfig;
+        this.libertyLogsContextCollector = libertyLogsContextCollector;
         this.objectMapper = new ObjectMapper();
         this.httpClient = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_1_1)
@@ -106,6 +108,16 @@ public class McpContextCollector {
             collectCryostatContext(contextBuilder, alert);
         }
 
+        // Filesystem MCP: Liberty logs collection
+        if (alert.getPodName() != null && !alert.getPodName().isBlank()) {
+            String libertyLogs = libertyLogsContextCollector.collectLibertyLogs(alert.getAlertId(), alert.getTimestamp());
+            contextBuilder.libertyLogs(libertyLogs);
+        } else {
+            log.info(LogMessages.Mcp.MCP_FILESYSTEM_SKIPPED_NO_POD)
+                .field(McpConstants.LogFields.ALERT_ID, alert.getAlertId())
+                .log();
+        }
+
         DiagnosticContext context = contextBuilder.build();
 
         log.info(LogMessages.Mcp.MCP_CONTEXT_COLLECTION_COMPLETE)
@@ -113,6 +125,7 @@ public class McpContextCollector {
             .field(McpConstants.LogFields.HAS_K8S_CONTEXT, context.hasKubernetesContext())
             .field(McpConstants.LogFields.HAS_KRUIZE_CONTEXT, context.hasKruizeContext())
             .field(McpConstants.LogFields.HAS_CRYOSTAT_CONTEXT, context.hasCryostatContext())
+            .field(McpConstants.LogFields.HAS_FILESYSTEM_CONTEXT, context.hasFilesystemContext())
             .log();
 
         return context;

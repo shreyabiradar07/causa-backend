@@ -110,6 +110,7 @@ public class DiagnosticServiceImpl implements DiagnosticService {
             .field(LogFields.HAS_K8S_CONTEXT, diagnosticContext.hasKubernetesContext())
             .field(LogFields.HAS_KRUIZE_CONTEXT, diagnosticContext.hasKruizeContext())
             .field(LogFields.HAS_CRYOSTAT_CONTEXT, diagnosticContext.hasCryostatContext())
+            .field(LogFields.HAS_FILESYSTEM_CONTEXT, diagnosticContext.hasFilesystemContext())
             .log();
 
         // Step 2: Convert context to formatted string for LLM
@@ -218,8 +219,8 @@ public class DiagnosticServiceImpl implements DiagnosticService {
             log.info(LogMessages.Diagnostic.RCA_GENERATED_SUCCESS)
                 .field(DiagnosticConstants.FIELD_ALERT_ID, alert.getAlertId())
                 .field("anomalyType", rca.anomalyType())
-                .field("rcaConfidence", rca.llmConfidenceScoreForRca())
-                .field("solutionConfidence", rca.llmConfidenceScoreForSolution())
+                .field("rcaConfidence", rca.confidenceSummary() != null
+                    ? rca.confidenceSummary().rcaConfidenceScore() : null)
                 .log();
 
             return rca;

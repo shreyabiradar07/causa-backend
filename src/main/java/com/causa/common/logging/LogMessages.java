@@ -195,5 +195,14 @@ public final class LogMessages {
 
         // Context collection completion
         public static final String MCP_CONTEXT_COLLECTION_COMPLETE = "MCP context collection completed";
+
+        // Filesystem MCP (Liberty logs)
+        public static final String MCP_FILESYSTEM_LIST_DIRECTORY = "Filesystem MCP list_directory_with_sizes called for Liberty logs";
+        public static final String MCP_FILESYSTEM_READ_FILE = "Filesystem MCP read_text_file called for Liberty log file";
+        public static final String MCP_FILESYSTEM_LIBERTY_LOGS_COLLECTED = "Liberty log files collected via Filesystem MCP";
+        public static final String MCP_FILESYSTEM_SKIPPED_NO_POD = "Skipping Filesystem MCP calls - no pod name in alert";
+        public static final String MCP_FILESYSTEM_FILE_SKIPPED_SIZE = "Skipping Liberty log file — exceeds size threshold";
+        public static final String MCP_FILESYSTEM_FILE_SKIPPED_WINDOW = "Skipping Liberty log file — outside alert time window";
+        public static final String MCP_FILESYSTEM_FFDC_LIST = "Filesystem MCP list_directory_with_sizes called for Liberty FFDC directory";
     }
 }

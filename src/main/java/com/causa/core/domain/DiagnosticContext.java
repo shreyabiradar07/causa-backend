@@ -38,6 +38,9 @@ public final class DiagnosticContext {
     private final String exceptionAnalysis;
     private final String containerAnalysis;
 
+    // Filesystem MCP context
+    private final String libertyLogs;
+
     private DiagnosticContext(Builder builder) {
         this.podName = builder.podName;
         this.containerName = builder.containerName;
@@ -52,6 +55,7 @@ public final class DiagnosticContext {
         this.threadAnalysis = builder.threadAnalysis;
         this.exceptionAnalysis = builder.exceptionAnalysis;
         this.containerAnalysis = builder.containerAnalysis;
+        this.libertyLogs = builder.libertyLogs;
     }
 
     // Getters
@@ -108,6 +112,10 @@ public final class DiagnosticContext {
         return containerAnalysis;
     }
 
+    public String getLibertyLogs() {
+        return libertyLogs;
+    }
+
     /**
      * Checks if any Kubernetes context was collected.
      *
@@ -140,12 +148,21 @@ public final class DiagnosticContext {
     }
 
     /**
+     * Checks if any Filesystem MCP context was collected.
+     *
+     * @return true if liberty logs are present
+     */
+    public boolean hasFilesystemContext() {
+        return isNotBlank(libertyLogs);
+    }
+
+    /**
      * Checks if any diagnostic context was collected.
      *
      * @return true if any context field is non-null and non-blank
      */
     public boolean hasAnyContext() {
-        return hasKubernetesContext() || hasKruizeContext() || hasCryostatContext();
+        return hasKubernetesContext() || hasKruizeContext() || hasCryostatContext() || hasFilesystemContext();
     }
 
     /**
@@ -185,6 +202,9 @@ public final class DiagnosticContext {
         appendSection(sb, ContextConstants.SECTION_THREAD_ANALYSIS, threadAnalysis);
         appendSection(sb, ContextConstants.SECTION_EXCEPTION_ANALYSIS, exceptionAnalysis);
         appendSection(sb, ContextConstants.SECTION_CONTAINER_ANALYSIS, containerAnalysis);
+
+        // Filesystem context
+        appendSection(sb, ContextConstants.SECTION_LIBERTY_LOGS, libertyLogs);
 
         return sb.toString();
     }
@@ -241,6 +261,7 @@ public final class DiagnosticContext {
         private String threadAnalysis;
         private String exceptionAnalysis;
         private String containerAnalysis;
+        private String libertyLogs;
 
         private Builder() {}
 
@@ -306,6 +327,11 @@ public final class DiagnosticContext {
 
         public Builder containerAnalysis(String containerAnalysis) {
             this.containerAnalysis = containerAnalysis;
+            return this;
+        }
+
+        public Builder libertyLogs(String libertyLogs) {
+            this.libertyLogs = libertyLogs;
             return this;
         }
 
