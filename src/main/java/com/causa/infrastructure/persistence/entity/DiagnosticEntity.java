@@ -84,7 +84,7 @@ public class DiagnosticEntity extends BaseEntity {
 
     /**
      * Supporting evidence bundle stored as JSONB.
-     * Shape: {@code { "supporting_logs": [...], "evidences": [...], "confidence_summary": "..." }}.
+     * Shape: {@code { "supporting_logs": [...], "evidences": [...], "confidence_summary": { "rca_confidence_score": 0.0, "summary_text": "..." } }}.
      */
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")

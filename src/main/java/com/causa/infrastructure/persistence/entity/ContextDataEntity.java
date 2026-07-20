@@ -2,7 +2,6 @@ package com.causa.infrastructure.persistence.entity;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
-import org.hibernate.annotations.Array;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -51,19 +50,6 @@ public class ContextDataEntity extends BaseEntity {
     private String content;
 
     /**
-     * 1536-dimension vector embedding of {@code content} (OpenAI standard).
-     * Stored as pgvector {@code vector(1536)} — {@code null} until the embedding pipeline runs.
-     *
-     * Mapped via {@code hibernate-vector} (Hibernate 6.4+): {@code @JdbcTypeCode(SqlTypes.VECTOR)}
-     * registers the native pgvector JDBC type handler and {@code @Array(length = 1536)} declares
-     * the fixed dimension, producing the correct {@code vector(1536)} DDL and wire-format binding.
-     */
-    @JdbcTypeCode(SqlTypes.VECTOR)
-    @Array(length = 1536)
-    @Column(columnDefinition = "vector(1536)")
-    private float[] embedding;
-
-    /**
      * Extra metadata about this context chunk stored as JSONB.
      * Shape: free-form; e.g. {@code { "source": "kubernetes", "lines": 200 }}.
      */
@@ -98,9 +84,6 @@ public class ContextDataEntity extends BaseEntity {
 
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
-
-    public float[] getEmbedding() { return embedding; }
-    public void setEmbedding(float[] embedding) { this.embedding = embedding; }
 
     public JsonNode getContextMetadata() { return contextMetadata; }
     public void setContextMetadata(JsonNode contextMetadata) { this.contextMetadata = contextMetadata; }

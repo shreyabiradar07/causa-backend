@@ -3,6 +3,8 @@ package com.causa.core.domain;
 import com.causa.common.constants.DiagnosticConstants.DiagnosticStatus;
 import com.causa.common.constants.DiagnosticConstants.FaultDomain;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.Objects;
 
@@ -67,14 +69,28 @@ public final class Diagnostic {
     /**
      * Generates a deterministic diagnostic ID from alert ID and timestamp.
      *
-     * <p>Format: diag-{alertId}-{epochMillis}
+     * <p>Format: {@code diag_<16 hex chars>} — always exactly 21 characters,
+     * fitting the {@code VARCHAR(21)} database column.
+     * The 16-char suffix is the first 8 bytes of SHA-256({alertId}:{epochMillis})
+     * encoded as lowercase hex.
      *
      * @param alertId the alert ID
      * @param timestamp the diagnostic timestamp
      * @return the generated diagnostic ID
      */
     public static String generateDiagnosticId(String alertId, Instant timestamp) {
-        return "diag-" + alertId + "-" + timestamp.toEpochMilli();
+        String input = alertId + ":" + timestamp.toEpochMilli();
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hex = new StringBuilder(16);
+            for (int i = 0; i < 8; i++) {
+                hex.append(String.format("%02x", hash[i]));
+            }
+            return "diag_" + hex;
+        } catch (Exception e) {
+            throw new IllegalStateException("SHA-256 not available", e);
+        }
     }
 
     /**

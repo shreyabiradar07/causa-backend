@@ -15,7 +15,6 @@
 -- IDs are generated and validated by the application layer.
 -- =============================================================================
 
-
 -- =============================================================================
 -- 1. ALERTS TABLE (Prometheus Webhook Ingestion)
 -- =============================================================================
@@ -102,9 +101,6 @@ CREATE TABLE IF NOT EXISTS context_data (
     context_type     VARCHAR(64)  NOT NULL,   -- K8S_LOGS, JFR_REPORT, KRUIZE_METRICS
     content          TEXT         NOT NULL,
 
-    -- Vector Storage: Defaulting to 1536 dimensions (OpenAI standard)
-    embedding        vector(1536),
-
     context_metadata JSONB,
     created_at       TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at       TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -115,10 +111,6 @@ CREATE TABLE IF NOT EXISTS context_data (
 
 CREATE INDEX IF NOT EXISTS idx_context_alert          ON context_data (alert_id, context_type);
 CREATE INDEX IF NOT EXISTS idx_context_container_name ON context_data (container_name);
-
--- Production-grade HNSW Vector index for rapid similarity searches
-CREATE INDEX IF NOT EXISTS idx_context_vector ON context_data
-    USING hnsw (embedding vector_cosine_ops);
 
 
 -- =============================================================================

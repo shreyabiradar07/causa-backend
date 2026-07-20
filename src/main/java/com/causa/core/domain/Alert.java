@@ -3,6 +3,8 @@ package com.causa.core.domain;
 import com.causa.common.constants.AlertConstants.AlertSeverity;
 import com.causa.common.constants.AlertConstants.AlertStatus;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
@@ -93,7 +95,11 @@ public final class Alert {
     /**
      * Generates a deterministic alert ID from container name and timestamp.
      *
-     * <p>Format: {containerName}-{epochMillis}
+     * <p>Format: {@code alrt_<16 hex chars>} — always exactly 21 characters,
+     * fitting the {@code VARCHAR(21)} database column.
+     * The 16-char suffix is the first 8 bytes of SHA-256({containerName}:{epochMillis})
+     * encoded as lowercase hex, making the ID deterministic and idempotent for the
+     * same container + timestamp pair.
      *
      * @param containerName the container name (sanitized if null)
      * @param timestamp the alert timestamp
@@ -103,7 +109,20 @@ public final class Alert {
         String sanitized = (containerName != null && !containerName.isBlank())
             ? containerName
             : "unknown";
-        return sanitized + "-" + timestamp.toEpochMilli();
+        String input = sanitized + ":" + timestamp.toEpochMilli();
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
+            // Take first 8 bytes → 16 hex chars
+            StringBuilder hex = new StringBuilder(16);
+            for (int i = 0; i < 8; i++) {
+                hex.append(String.format("%02x", hash[i]));
+            }
+            return "alrt_" + hex;
+        } catch (Exception e) {
+            // SHA-256 is always available; this branch is unreachable in practice
+            throw new IllegalStateException("SHA-256 not available", e);
+        }
     }
 
     /**

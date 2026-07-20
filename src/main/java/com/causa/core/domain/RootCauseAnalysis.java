@@ -11,13 +11,16 @@ import java.util.List;
  * Root Cause Analysis Domain Model
  *
  * <p>Represents the structured output from the LLM-based RCA process.
- * This matches the expected JSON schema from the RCA prompt template.
+ * This matches the JSON schema defined in {@code rca-prompt-template.yml}.
  *
  * @since 0.0.1
  */
 public record RootCauseAnalysis(
     @JsonProperty("issue_title")
     String issueTitle,
+
+    @JsonProperty("issue_summary")
+    String issueSummary,
 
     @JsonProperty("issue_description")
     String issueDescription,
@@ -37,23 +40,11 @@ public record RootCauseAnalysis(
     @JsonProperty("evidences")
     List<String> evidences,
 
-    @JsonProperty("possible_solutions")
-    List<Solution> possibleSolutions,
-
-    @JsonProperty("llm_confidence_score_for_rca")
-    @NotNull(message = "RCA confidence score is required")
-    @DecimalMin(value = "0.0", message = "RCA confidence score must be >= 0.0")
-    @DecimalMax(value = "1.0", message = "RCA confidence score must be <= 1.0")
-    Double llmConfidenceScoreForRca,
-
-    @JsonProperty("llm_confidence_score_for_solution")
-    @NotNull(message = "Solution confidence score is required")
-    @DecimalMin(value = "0.0", message = "Solution confidence score must be >= 0.0")
-    @DecimalMax(value = "1.0", message = "Solution confidence score must be <= 1.0")
-    Double llmConfidenceScoreForSolution,
+    @JsonProperty("recommendations")
+    List<Recommendation> recommendations,
 
     @JsonProperty("confidence_summary")
-    String confidenceSummary,
+    ConfidenceSummary confidenceSummary,
 
     @JsonProperty("llm_notes")
     String llmNotes
@@ -77,34 +68,41 @@ public record RootCauseAnalysis(
     }
 
     /**
-     * Solution Record
+     * Confidence summary — wraps the RCA confidence score and explanation text.
      */
-    public record Solution(
-        @JsonProperty("solution")
-        String solution,
+    public record ConfidenceSummary(
+        @JsonProperty("rca_confidence_score")
+        @NotNull(message = "RCA confidence score is required")
+        @DecimalMin(value = "0.0", message = "RCA confidence score must be >= 0.0")
+        @DecimalMax(value = "1.0", message = "RCA confidence score must be <= 1.0")
+        Double rcaConfidenceScore,
 
-        @JsonProperty("justification")
-        String justification,
+        @JsonProperty("summary_text")
+        String summaryText
+    ) {}
 
-        @JsonProperty("success_probability")
-        SuccessProbability successProbability,
+    /**
+     * Recommendation record matching the prompt's recommendations array structure.
+     */
+    public record Recommendation(
+        @JsonProperty("solution_type")
+        String solutionType,
+
+        @JsonProperty("solution_title")
+        String solutionTitle,
+
+        @JsonProperty("solution_description")
+        String solutionDescription,
 
         @JsonProperty("implementation_notes")
-        String implementationNotes
-    ) {
+        String implementationNotes,
 
-        /**
-         * Success Probability Enum
-         */
-        public enum SuccessProbability {
-            @JsonProperty("High")
-            HIGH,
+        @JsonProperty("solution_confidence_score")
+        @DecimalMin(value = "0.0", message = "Solution confidence score must be >= 0.0")
+        @DecimalMax(value = "1.0", message = "Solution confidence score must be <= 1.0")
+        Double solutionConfidenceScore,
 
-            @JsonProperty("Medium")
-            MEDIUM,
-
-            @JsonProperty("Low")
-            LOW
-        }
-    }
+        @JsonProperty("solution_alerts")
+        List<String> solutionAlerts
+    ) {}
 }

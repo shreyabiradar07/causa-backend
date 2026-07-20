@@ -129,6 +129,16 @@ public class DiagnosticServiceImpl implements DiagnosticService {
         // Step 3: Perform root cause analysis using LLM
         RootCauseAnalysis rca = performRootCauseAnalysis(alert, contextForLLM);
 
+        try {
+            log.info("RCA GENERATED")
+                    .field("rca", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(rca))
+                    .log();
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            log.info("RCA GENERATED")
+                    .field("rca", rca)
+                    .log();
+        }
+
         // TODO: Step 4: Validate RCA against collected context
         // validateRca(alert, rca, contextForLLM);
 
